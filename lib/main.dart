@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:mobe_frontend/data_source/network/network.dart';
 import 'package:mobe_frontend/presentation/home/home.dart';
 import 'package:mobe_frontend/presentation/login/login.dart';
 
-void main() => runApp(const MyApp());
+void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+  MyApp({Key? key}) : super(key: key);
 
   static const String _title = 'Mobe';
+  BaseService baseService = BaseService();
 
   @override
   Widget build(BuildContext context) {
@@ -18,7 +20,9 @@ class MyApp extends StatelessWidget {
       ),
       home: Scaffold(
         appBar: AppBar(title: const Text(_title)),
-        body: Login(),
+        body: Login(
+          baseService: baseService,
+        ),
       ),
     );
   }

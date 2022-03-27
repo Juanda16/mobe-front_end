@@ -1,14 +1,24 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+import '../../data_source/network/network.dart';
 import '../home/home.dart';
+import '../register/registro.dart';
 
 class Login extends StatelessWidget {
-  Login({Key? key}) : super(key: key);
+  Login({required BaseService baseService, Key? key})
+      : _baseService = baseService,
+        super(key: key);
 
-  TextEditingController nameController = TextEditingController();
+  TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
 
+  bool emailValid(email) => RegExp(
+          r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
+      .hasMatch(email);
+
+  BaseService _baseService;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -26,47 +36,76 @@ class Login extends StatelessWidget {
                       'Ingresar',
                       style: TextStyle(fontSize: 20),
                     )),
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  child: TextField(
-                    controller: nameController,
-                    decoration: const InputDecoration(
-                      border: OutlineInputBorder(),
-                      labelText: 'Email',
-                    ),
+                Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: <Widget>[
+                      Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: TextFormField(
+                          controller: emailController,
+                          validator: (value) {
+                            if (!emailValid(value)) {
+                              return 'Ingrese un Email válido';
+                            }
+                          },
+                          decoration: const InputDecoration(
+                            border: OutlineInputBorder(),
+                            labelText: 'Email',
+                            hintText: 'Ingrése un Email válido ',
+                          ),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: TextFormField(
+                          controller: passwordController,
+                          validator: (value) {
+                            if (value!.isEmpty) {
+                              return 'Ingrese el password';
+                            }
+                          },
+                          obscureText: true,
+                          decoration: const InputDecoration(
+                            border: OutlineInputBorder(),
+                            labelText: 'Password',
+                            hintText: 'Ingrése su password',
+                          ),
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: () {},
+                        child: const Text(
+                          'Olvidé el password',
+                        ),
+                      ),
+                      Container(
+                        height: 80,
+                        padding: const EdgeInsets.all(16),
+                        child: ElevatedButton(
+                          onPressed: () {
+                            if (_formKey.currentState!.validate()) {
+                              Map<String, dynamic> loginJson = {
+                                'username': emailController.text,
+                                'password': passwordController.text,
+                                'grant_type': 'password'
+                              };
+                              print(loginJson);
+                              _baseService.postReq(url: 'url', body: loginJson);
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => const Home()),
+                              );
+                            }
+                          },
+                          child: const Text('Login'),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                Container(
-                  padding: const EdgeInsets.fromLTRB(10, 10, 10, 0),
-                  child: TextField(
-                    obscureText: true,
-                    controller: passwordController,
-                    decoration: const InputDecoration(
-                      border: OutlineInputBorder(),
-                      labelText: 'Password',
-                    ),
-                  ),
-                ),
-                TextButton(
-                  onPressed: () {},
-                  child: const Text(
-                    'Olvidé el password',
-                  ),
-                ),
-                Container(
-                    height: 50,
-                    padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
-                    child: ElevatedButton(
-                      child: const Text('Login'),
-                      onPressed: () {
-                        print(nameController.text);
-                        print(passwordController.text);
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => const Home()),
-                        );
-                      },
-                    )),
                 Row(
                   children: <Widget>[
                     const Text('No tienes una cuenta?'),
@@ -76,7 +115,13 @@ class Login extends StatelessWidget {
                         style: TextStyle(fontSize: 20),
                       ),
                       onPressed: () {
-                        //signup screen
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => Register(
+                                    baseService: _baseService,
+                                  )),
+                        );
                       },
                     )
                   ],
@@ -86,3 +131,7 @@ class Login extends StatelessWidget {
             )));
   }
 }
+
+// bool emailValid = RegExp(
+//         r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
+//     .hasMatch(email);
