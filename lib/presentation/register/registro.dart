@@ -247,6 +247,7 @@ class Register extends StatelessWidget {
                                 );
                                 print(response.body);
                                 print(response.statusCode);
+                                //Firebase login
                                 // try {
                                 //   UserCredential userCredential =
                                 //       await FirebaseAuth

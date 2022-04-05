@@ -137,15 +137,6 @@ class Login extends StatelessWidget {
                                   contentType:
                                       'application/x-www-form-urlencoded');
 
-                              //var url = Uri.parse('https://httpbin.org/post');
-                              // var url = Uri.parse(
-                              //     'https://mobe-backend.herokuapp.com/oauth/token');
-                              // var response = await http.post(url,
-                              //     body: loginJson,
-                              //     headers: {
-                              //       "Authorization":
-                              //           'Basic Zmx1dHRlcmFwcDoxMjM0NQ=='
-                              //     });
                               print('Response status: ${response.statusCode}');
                               print('Response body: ${response.body}');
                               if (response.statusCode == 200) {
@@ -172,6 +163,7 @@ class Login extends StatelessWidget {
                                       builder: (context) => Home(list: list)),
                                 );
                               }
+                              //Firebase login
                               // try {
                               //   UserCredential userCredential =
                               //       await FirebaseAuth.instance
@@ -226,7 +218,3 @@ class Login extends StatelessWidget {
             )));
   }
 }
-
-// bool emailValid = RegExp(
-//         r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
-//     .hasMatch(email);
