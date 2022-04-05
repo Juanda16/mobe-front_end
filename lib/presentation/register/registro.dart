@@ -5,12 +5,9 @@ import '../../data_source/network/network.dart';
 import '../login/login.dart';
 
 class Register extends StatelessWidget {
-  Register({required BaseService baseService, Key? key})
-      : _baseService = baseService,
-        super(key: key);
   final _formKey = GlobalKey<FormState>();
 
-  BaseService _baseService;
+  //BaseService _baseService;
   TextEditingController textEditingController = TextEditingController();
 
   bool emailValid(email) => RegExp(
@@ -24,10 +21,10 @@ class Register extends StatelessWidget {
   Widget build(BuildContext context) {
     String? id;
     String? name;
-    String? lastName;
+    String? lastname;
     String? email;
     String? password;
-    String? phone;
+    String? cellphone;
     String? address;
     String? department;
     String? city;
@@ -91,7 +88,7 @@ class Register extends StatelessWidget {
                         padding: const EdgeInsets.fromLTRB(10, 10, 10, 0),
                         child: TextFormField(
                           onSaved: (String? value) {
-                            lastName = value;
+                            lastname = value;
                           },
                           validator: (value) {
                             if (value!.isEmpty) {
@@ -146,7 +143,7 @@ class Register extends StatelessWidget {
                         padding: const EdgeInsets.fromLTRB(10, 10, 10, 0),
                         child: TextFormField(
                           onSaved: (String? value) {
-                            phone = value;
+                            cellphone = value;
                           },
                           validator: (value) {
                             if (value!.isEmpty) {
@@ -223,21 +220,50 @@ class Register extends StatelessWidget {
                           padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
                           child: ElevatedButton(
                             child: const Text('Estoy Listo!'),
-                            onPressed: () {
+                            onPressed: () async {
                               if (_formKey.currentState!.validate()) {
                                 _formKey.currentState?.save();
                                 Map<String, dynamic> registerJson = {
                                   'id': id,
                                   'name': name,
-                                  'lastName': lastName,
+                                  'lastname': lastname,
                                   'email': email,
                                   'password': password,
-                                  'phone': phone,
+                                  'cellphone': cellphone,
                                   'address': address,
                                   'department': department,
                                   'city': city,
                                 };
                                 print(registerJson);
+                                var response = await BaseService().postReq(
+                                  url:
+                                      'https://mobe-backend.herokuapp.com/api/registro',
+                                  body: registerJson,
+                                  headers: <String, String>{
+                                    'authorization':
+                                        'Basic Zmx1dHRlcmFwcDoxMjM0NQ==',
+                                  },
+                                  contentType: "application/json",
+                                );
+                                print(response.body);
+                                print(response.statusCode);
+                                // try {
+                                //   UserCredential userCredential =
+                                //       await FirebaseAuth
+                                //           .instance
+                                //           .createUserWithEmailAndPassword(
+                                //               email: email!,
+                                //               password: password!);
+                                // } on FirebaseAuthException catch (e) {
+                                //   if (e.code == 'weak-password') {
+                                //     print('The password provided is too weak.');
+                                //   } else if (e.code == 'email-already-in-use') {
+                                //     print(
+                                //         'The account already exists for that email.');
+                                //   }
+                                // } catch (e) {
+                                //   print(e);
+                                // }
                                 Navigator.pop(context);
                               }
                             },
@@ -256,10 +282,7 @@ class Register extends StatelessWidget {
                       onPressed: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(
-                              builder: (context) => Login(
-                                    baseService: _baseService,
-                                  )),
+                          MaterialPageRoute(builder: (context) => Login()),
                         );
                       },
                     )

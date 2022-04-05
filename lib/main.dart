@@ -1,9 +1,17 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:mobe_frontend/data_source/network/network.dart';
-import 'package:mobe_frontend/presentation/home/home.dart';
 import 'package:mobe_frontend/presentation/login/login.dart';
 
-void main() => runApp(MyApp());
+import 'firebase_options.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  runApp(MyApp());
+}
 
 class MyApp extends StatelessWidget {
   MyApp({Key? key}) : super(key: key);
@@ -20,9 +28,7 @@ class MyApp extends StatelessWidget {
       ),
       home: Scaffold(
         appBar: AppBar(title: const Text(_title)),
-        body: Login(
-          baseService: baseService,
-        ),
+        body: Login(),
       ),
     );
   }
@@ -75,10 +81,10 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
             ),
             TextButton(
               onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const Home()),
-                );
+                // Navigator.push(
+                //   context,
+                //   MaterialPageRoute(builder: (context) =>  Home()),
+                // );
               },
               child: const Text(
                 'Olvidé el password',

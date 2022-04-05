@@ -1,14 +1,14 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 import '../../data_source/network/network.dart';
 import '../home/home.dart';
 import '../register/registro.dart';
 
 class Login extends StatelessWidget {
-  Login({required BaseService baseService, Key? key})
-      : _baseService = baseService,
-        super(key: key);
+  //Login({required BaseService baseService, Key? key})
 
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
@@ -18,9 +18,40 @@ class Login extends StatelessWidget {
           r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
       .hasMatch(email);
 
-  BaseService _baseService;
+  Future<UserCredential> signInWithGoogle() async {
+    // Trigger the authentication flow
+    final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+
+    // Obtain the auth details from the request
+    final GoogleSignInAuthentication? googleAuth =
+        await googleUser?.authentication;
+
+    // Create a new credential
+    final credential = GoogleAuthProvider.credential(
+      accessToken: googleAuth?.accessToken,
+      idToken: googleAuth?.idToken,
+    );
+
+    // Once signed in, return the UserCredential
+    return await FirebaseAuth.instance.signInWithCredential(credential);
+  }
+
+  //BaseService _baseService;
   @override
   Widget build(BuildContext context) {
+    FirebaseAuth auth = FirebaseAuth.instance;
+
+    FirebaseAuth.instance.authStateChanges().listen((User? user) {
+      if (user == null) {
+        print('User is currently signed out!');
+      } else {
+        print('User is signed in!');
+        // Navigator.push(
+        //   context,
+        //   MaterialPageRoute(builder: (context) => const Home()),
+        // );
+      }
+    });
     return Scaffold(
         appBar: AppBar(
           title: const Text('Login'),
@@ -75,7 +106,9 @@ class Login extends StatelessWidget {
                         ),
                       ),
                       TextButton(
-                        onPressed: () {},
+                        onPressed: () {
+                          signInWithGoogle();
+                        },
                         child: const Text(
                           'Olvidé el password',
                         ),
@@ -84,20 +117,82 @@ class Login extends StatelessWidget {
                         height: 80,
                         padding: const EdgeInsets.all(16),
                         child: ElevatedButton(
-                          onPressed: () {
+                          onPressed: () async {
                             if (_formKey.currentState!.validate()) {
+                              //if (true) {
                               Map<String, dynamic> loginJson = {
                                 'username': emailController.text,
                                 'password': passwordController.text,
                                 'grant_type': 'password'
                               };
                               print(loginJson);
-                              _baseService.postReq(url: 'url', body: loginJson);
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => const Home()),
-                              );
+                              var response = await BaseService().postReq(
+                                  url:
+                                      'https://mobe-backend.herokuapp.com/oauth/token',
+                                  body: loginJson,
+                                  headers: <String, String>{
+                                    'authorization':
+                                        'Basic Zmx1dHRlcmFwcDoxMjM0NQ==',
+                                  },
+                                  contentType:
+                                      'application/x-www-form-urlencoded');
+
+                              //var url = Uri.parse('https://httpbin.org/post');
+                              // var url = Uri.parse(
+                              //     'https://mobe-backend.herokuapp.com/oauth/token');
+                              // var response = await http.post(url,
+                              //     body: loginJson,
+                              //     headers: {
+                              //       "Authorization":
+                              //           'Basic Zmx1dHRlcmFwcDoxMjM0NQ=='
+                              //     });
+                              print('Response status: ${response.statusCode}');
+                              print('Response body: ${response.body}');
+                              if (response.statusCode == 200) {
+                                List<dynamic> list = [];
+
+                                var response2 = await BaseService().getReq(
+                                  url:
+                                      'https://mobe-backend.herokuapp.com/api/categorias',
+                                  headers: <String, String>{
+                                    'authorization':
+                                        'Bearer ${response.body['access_token']}',
+                                  },
+                                );
+                                print('response2  ${response2.body}');
+
+                                list = response2.body
+                                    .map((data) => Categoria.fromJson(data))
+                                    .toList();
+                                print('list ${list}');
+
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => Home(list: list)),
+                                );
+                              }
+                              // try {
+                              //   UserCredential userCredential =
+                              //       await FirebaseAuth.instance
+                              //           .signInWithEmailAndPassword(
+                              //               email: emailController.text,
+                              //               password: passwordController.text);
+                              //
+                              //   print(userCredential.credential?.token);
+                              //   Navigator.push(
+                              //     context,
+                              //     MaterialPageRoute(
+                              //         builder: (context) => const Home()),
+                              //   );
+                              // } on FirebaseAuthException catch (e) {
+                              //   if (e.code == 'user-not-found') {
+                              //     print('No user found for that email.');
+                              //   } else if (e.code == 'wrong-password') {
+                              //     print(
+                              //         'Wrong password provided for that user.');
+                              //   }
+                              // }
                             }
                           },
                           child: const Text('Login'),
@@ -119,7 +214,7 @@ class Login extends StatelessWidget {
                           context,
                           MaterialPageRoute(
                               builder: (context) => Register(
-                                    baseService: _baseService,
+                                  //baseService: _baseService,
                                   )),
                         );
                       },
